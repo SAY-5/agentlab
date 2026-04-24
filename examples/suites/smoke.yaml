@@ -1,0 +1,24 @@
+name: smoke
+version: "1"
+description: Tiny suite that runs in a few seconds with mocked providers.
+
+defaults:
+  timeout_s: 30
+  max_turns: 3
+
+tasks:
+  - id: say_hello
+    description: Emit a greeting.
+    prompt: Please say hello.
+    scoring:
+      - kind: regex_match
+        patterns: ["(?i)hello|hi"]
+        weight: 1.0
+
+  - id: arithmetic
+    description: Add two small numbers.
+    prompt: What is 2 plus 2? Reply with just the number.
+    scoring:
+      - kind: string_equals
+        expected: "4"
+        weight: 1.0

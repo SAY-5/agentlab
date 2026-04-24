@@ -1,0 +1,23 @@
+name: python-refactor
+version: "1"
+description: Small Python refactoring tasks with unit tests.
+
+defaults:
+  timeout_s: 120
+  max_turns: 10
+
+tasks:
+  - id: solve_addition_{language}
+    description: Solve a tiny addition problem.
+    params:
+      language: [python, javascript]
+    prompt: |
+      Write a {{ language }} function that adds two integers and returns the sum.
+      Reply only with the function definition.
+    scoring:
+      - kind: rubric
+        prompt: |
+          Rate 0-5: is the function syntactically valid in {{ language }}, named
+          reasonably, and clearly adds two integers? Award 5 if yes; subtract 1
+          point per meaningful flaw.
+        weight: 1.0
