@@ -19,7 +19,7 @@ import pytest
 from agentlab.core.types import AgentDef, Completion, Message, Usage
 from agentlab.providers import register as register_provider
 from agentlab.providers.mock import MockProvider
-from agentlab.runners import Runner, RunnerConfig, RetryPolicy
+from agentlab.runners import RetryPolicy, Runner, RunnerConfig
 from agentlab.store import Store
 from agentlab.suites import load_suite
 
