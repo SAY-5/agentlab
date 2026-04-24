@@ -28,6 +28,8 @@ google = ["google-generativeai>=0.8"]
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
+    "pytest-benchmark>=4.0",
+    "httpx>=0.27",
     "ruff>=0.8",
     "mypy>=1.13",
     "types-PyYAML",
@@ -51,6 +53,10 @@ ignore = ["E501"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+markers = [
+    "benchmark: performance benchmark (skipped unless --benchmark-only passed)",
+]
+addopts = "-m 'not benchmark'"
 
 [tool.mypy]
 python_version = "3.11"
