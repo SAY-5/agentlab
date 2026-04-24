@@ -128,11 +128,13 @@ showing a runs list and a task-by-agent score heatmap per run.
 
 ## Companion projects
 
-Part of a three-repo set:
+Part of a five-repo set:
 
 - **[canvaslive](https://github.com/SAY-5/canvaslive)** — real-time multiplayer whiteboard with operational-transform convergence.
 - **[pluginforge](https://github.com/SAY-5/pluginforge)** — Web Worker plugin sandbox with capability-based permissions.
 - **[agentlab](https://github.com/SAY-5/agentlab)** — you're here. AI coding agent evaluation harness.
+- **[payflow](https://github.com/SAY-5/payflow)** — Spring Boot payments API with idempotent transactions and Stripe webhooks.
+- **[queryflow](https://github.com/SAY-5/queryflow)** — natural-language SQL engine with pgvector RAG.
 
 ## License
 
