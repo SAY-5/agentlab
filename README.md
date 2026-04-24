@@ -1,5 +1,10 @@
 # AgentLab
 
+[![ci](https://github.com/SAY-5/agentlab/actions/workflows/ci.yml/badge.svg)](https://github.com/SAY-5/agentlab/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![tests](https://img.shields.io/badge/tests-44%20passing-brightgreen)](#)
+[![python](https://img.shields.io/badge/python-3.11+-3776ab)](#)
+
 Multi-model AI coding agent evaluation harness for prompt-engineering
 calibration. Define task suites in YAML, run them against any mix of
 OpenAI / Anthropic / Ollama (and anything else you register), score with
@@ -120,6 +125,14 @@ showing a runs list and a task-by-agent score heatmap per run.
 - **Scorer** — subclass the `Scorer` protocol, register via
   `agentlab.scoring.register("mine", MyScorer)`.
 - **Tool** — add to `agentlab/tools/` and register in `tools/__init__.py`.
+
+## Companion projects
+
+Part of a three-repo set:
+
+- **[canvaslive](https://github.com/SAY-5/canvaslive)** — real-time multiplayer whiteboard with operational-transform convergence.
+- **[pluginforge](https://github.com/SAY-5/pluginforge)** — Web Worker plugin sandbox with capability-based permissions.
+- **[agentlab](https://github.com/SAY-5/agentlab)** — you're here. AI coding agent evaluation harness.
 
 ## License
 
