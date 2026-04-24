@@ -9,16 +9,51 @@ from agentlab.core.types import ToolSpec
 
 
 def _resolve_within(workspace: str | None, rel: str) -> Path:
+    """Return ``workspace / rel`` resolved, guaranteed to stay inside workspace.
+
+    Rejects:
+      * absolute ``rel`` paths (they'd bypass the workspace root entirely),
+      * paths that escape via ``..`` (``resolve()`` normalizes them; we then
+        verify with ``is_relative_to`` against the resolved workspace root),
+      * symlinks anywhere on the path whose target lies outside the
+        workspace — ``resolve()`` follows symlinks, and if the resolved
+        target is outside the workspace it fails the relative_to check.
+
+    Note we intentionally resolve the workspace itself to its canonical
+    form first; if the workspace *is* a symlink the resolved root is its
+    target, not the symlink source, so subsequent comparisons stay
+    internally consistent.
+    """
     if not workspace:
         raise ValueError("no workspace configured for this task")
-    root = Path(workspace).resolve()
-    target = (root / rel).resolve()
-    # Ensure target is inside root.
-    try:
-        target.relative_to(root)
-    except ValueError as e:
-        raise ValueError(f"path escapes workspace: {rel}") from e
+    if Path(rel).is_absolute():
+        raise ValueError(f"absolute paths not permitted: {rel!r}")
+    root = Path(workspace).resolve(strict=False)
+    target = (root / rel).resolve(strict=False)
+    if not _is_relative_to(target, root):
+        raise ValueError(f"path escapes workspace: {rel!r}")
+    # Walk each intermediate component explicitly. A directory symlink whose
+    # target is outside the workspace would already have been caught above
+    # via ``target.resolve()``, but this gives a clearer error message.
+    probe = root / rel
+    for parent in [probe, *probe.parents]:
+        if parent == root or not parent.exists() and not parent.is_symlink():
+            continue
+        if parent.is_symlink():
+            linked = parent.resolve(strict=False)
+            if not _is_relative_to(linked, root):
+                raise ValueError(
+                    f"path traverses symlink leaving workspace: {rel!r}"
+                )
     return target
+
+
+def _is_relative_to(path: Path, other: Path) -> bool:
+    try:
+        path.relative_to(other)
+        return True
+    except ValueError:
+        return False
 
 
 class FileReadTool:

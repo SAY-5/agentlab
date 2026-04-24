@@ -78,15 +78,25 @@ INDEX_HTML = r"""<!doctype html>
   <section class="detail" id="detail"><p style="color:var(--dim)">← pick a run</p></section>
 </main>
 <script>
+// Escape untrusted strings before interpolating into innerHTML.
+function esc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function loadRuns() {
   const r = await fetch("/api/runs");
   const runs = await r.json();
   const el = document.getElementById("runs");
   el.innerHTML = runs.map(x => `
-    <div class="run-item" data-id="${x.id}">
-      <div class="run-id">${x.id}</div>
-      <div style="color:var(--dim)">${x.suite_name}@${x.suite_version}</div>
-      <div style="color:var(--dim); font-size:11px">${new Date(x.started_at * 1000).toLocaleString()}</div>
+    <div class="run-item" data-id="${esc(x.id)}">
+      <div class="run-id">${esc(x.id)}</div>
+      <div style="color:var(--dim)">${esc(x.suite_name)}@${esc(x.suite_version)}</div>
+      <div style="color:var(--dim); font-size:11px">${esc(new Date(x.started_at * 1000).toLocaleString())}</div>
     </div>`).join("");
   el.querySelectorAll(".run-item").forEach(n => n.onclick = () => showRun(n.dataset.id));
   if (runs[0]) showRun(runs[0].id);
@@ -111,13 +121,13 @@ async function showRun(id) {
       const cls = avg === null ? "" : avg >= 0.5 ? "score-good" : "score-bad";
       return `<td class="score-cell ${cls}">${avg === null ? "—" : avg.toFixed(3)}</td>`;
     }).join("");
-    return `<tr><td>${task}</td>${cells}</tr>`;
+    return `<tr><td>${esc(task)}</td>${cells}</tr>`;
   }).join("");
   document.getElementById("detail").innerHTML = `
-    <h2 style="margin-top:0">${run.id} — ${run.suite_name}@${run.suite_version}</h2>
-    <p style="color:var(--dim)">${new Date(run.started_at * 1000).toLocaleString()} · ${run.results.length} result rows</p>
+    <h2 style="margin-top:0">${esc(run.id)} — ${esc(run.suite_name)}@${esc(run.suite_version)}</h2>
+    <p style="color:var(--dim)">${esc(new Date(run.started_at * 1000).toLocaleString())} · ${run.results.length} result rows</p>
     <table>
-      <thead><tr><th>task</th>${agents.map(a => `<th>${a}</th>`).join("")}</tr></thead>
+      <thead><tr><th>task</th>${agents.map(a => `<th>${esc(a)}</th>`).join("")}</tr></thead>
       <tbody>${rows}</tbody>
     </table>
     <p><span class="pill">tip</span> scores = 1.0 best; blank = not run</p>`;

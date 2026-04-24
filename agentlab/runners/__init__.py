@@ -108,9 +108,13 @@ class Runner:
         agent_def: AgentDef,
         trial_idx: int,
     ) -> Result:
+        # Prepare workspace off the event loop so a large copytree doesn't
+        # block concurrent tasks sharing the same loop thread.
+        workspace = await asyncio.to_thread(
+            self._prepare_workspace, run_id, task, agent_def, trial_idx
+        )
         async with sem:
             started = time.time()
-            workspace = self._prepare_workspace(run_id, task, agent_def, trial_idx)
             traj = await self._run_with_retry(agent_def, task, trial_idx)
             finished = time.time()
 
@@ -157,25 +161,27 @@ class Runner:
             try:
                 provider = get_provider(agent_def.provider)
                 strategy = get_strategy(agent_def.strategy)
-                return await asyncio.wait_for(
-                    strategy.run(
+                # ``asyncio.timeout`` cancels the wrapped task *and all its
+                # child tasks* on expiry (Python 3.11+), which is what we
+                # want — ``asyncio.wait_for`` only cancels the immediate
+                # awaitable, leaking any background tool-call tasks the
+                # strategy spawned.
+                async with asyncio.timeout(task.timeout_s):
+                    return await strategy.run(
                         provider,
                         agent_def,
                         task,
                         trial_idx=trial_idx,
                         tools_available=list(TOOL_REGISTRY.keys()),
-                    ),
-                    timeout=task.timeout_s,
-                )
+                    )
             except TimeoutError:
-                t = Trajectory(
+                return Trajectory(
                     agent_id=agent_def.id,
                     task_id=task.id,
                     trial_idx=trial_idx,
                     status="timeout",
                     error=f"timeout after {task.timeout_s}s",
                 )
-                return t
             except Exception as e:  # noqa: BLE001
                 last_exc = e
                 if attempt >= self.config.retry.max_attempts:

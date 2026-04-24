@@ -63,6 +63,20 @@ class PyTestScorer:
                 failed += n
             else:
                 errored += n
+        # Distinguish "no tests collected" (pytest exit code 5) from
+        # "tests ran and failed" — both would otherwise score 0.0, but
+        # the former is an authoring error, not a capability signal.
+        if proc.returncode == 5 and passed == 0 and failed == 0 and errored == 0:
+            return ScorerResult(
+                scorer=self.kind,
+                score=0.0,
+                weight=self.weight,
+                detail={
+                    "error": "pytest collected no tests",
+                    "returncode": 5,
+                    "tail": text[-1500:],
+                },
+            )
         total = passed + failed + errored
         score = passed / total if total else 0.0
         return ScorerResult(
